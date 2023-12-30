@@ -12,12 +12,18 @@ async function onFile(event: React.ChangeEvent<HTMLInputElement>) {
         const info = await encryptStreamedAttachment(fileStream, identityStream.writable);
         console.log("Encrypting with info: ", info);
 
+        // incrementally reassemble the image into a blob via a data URL
+        let imageBlob = new Blob();
         const writableStream = new WritableStream(
             {
                 write(chunk) {
                     console.log("WritableStream: Got chunk ", chunk);
+                    imageBlob = new Blob([imageBlob, chunk]);
+                    const imageUrl = URL.createObjectURL(imageBlob);
+                    document.getElementById('outputImage').src = imageUrl;
                 },
                 close() {
+                    console.log(imageBlob);
                     console.log("WritableSteam: closed");
                 },
                 abort(err) {
@@ -74,8 +80,11 @@ function App() {
     return (
         <>
             <form>
-                <input id="file" type="file" onChange={ onFile }/>
+                <label htmlFor="file">Pick an image:</label><br/>
+                <input id="file" type="file" onChange={ onFile } accept="image/png, image/jpeg, image/gif"/>
             </form>
+            <br/>
+            <img id="outputImage"/>
         </>
     )
 }
