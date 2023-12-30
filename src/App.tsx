@@ -23,7 +23,6 @@ async function onFile(event: React.ChangeEvent<HTMLInputElement>) {
                     document.getElementById('outputImage').src = imageUrl;
                 },
                 close() {
-                    console.log(imageBlob);
                     console.log("WritableSteam: closed");
                 },
                 abort(err) {
