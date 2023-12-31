@@ -2,15 +2,30 @@ import './App.css'
 
 import { encryptStreamedAttachment, decryptStreamedAttachment } from 'matrix-encrypt-attachment'
 
+
 async function onFile(event: React.ChangeEvent<HTMLInputElement>) {
     if (event.target.files && event.target.files[0]) {
         const file = event.target.files[0];
-        console.log("encrypting file with length", file.size);
+        console.log("encrypting file", file);
         const fileStream = await fileToReadableStream(file);
-        const queuingStrategy = new CountQueuingStrategy({ highWaterMark: 1 });
-        const identityStream = new TransformStream();
-        const info = await encryptStreamedAttachment(fileStream, identityStream.writable);
+        const identityTransform = new TransformStream();
+
+        const info = await encryptStreamedAttachment(fileStream, identityTransform.writable);
         console.log("Encrypting with info: ", info);
+
+/*
+        const response = await fetch(`https://localhost:8088/matthewtest-${new Date().getTime()}`, {
+            method: 'PUT',
+            body: identityTransform.readable,
+            duplex: 'half',
+            headers: {
+                'Content-Type': file.type,
+            },
+        });
+        console.log(response);
+*/
+
+        const queuingStrategy = new CountQueuingStrategy({ highWaterMark: 1 });
 
         // incrementally reassemble the image into a blob via a data URL
         let imageBlob = new Blob();
@@ -32,7 +47,7 @@ async function onFile(event: React.ChangeEvent<HTMLInputElement>) {
             queuingStrategy,
         );
 
-        await decryptStreamedAttachment(identityStream.readable, writableStream, info);
+        await decryptStreamedAttachment(identityTransform.readable, writableStream, info);
     }
 }
 
