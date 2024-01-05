@@ -15,4 +15,4 @@ npm run dev
 ```
 
 ...and select a file from disk, which the test jig will load, stream through `encryptStreamAttachment()` and
-`decryptStreamAttachemnt()` and render the result showing the associated `EncryptedFile` block.
+`decryptStreamAttachment()` and render the result showing the associated `EncryptedFile` block.
