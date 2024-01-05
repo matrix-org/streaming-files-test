@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { IEncryptedFile, encryptStreamedAttachment, decryptStreamedAttachment } from 'matrix-encrypt-attachment'
+import { IEncryptedFile, EncryptTransform, DecryptTransform } from 'matrix-encrypt-attachment'
 
 import './App.css'
 
@@ -50,28 +50,17 @@ function App() {
             const file = event.target.files[0];
             console.log("encrypting file", file);
             const fileStream = await fileToReadableStream(file);
-            const identityTransform = new TransformStream();
-
-            const i = await encryptStreamedAttachment(fileStream, identityTransform.writable);
+            const encryptTransform = new EncryptTransform();
+            const i = await encryptTransform.init();
             console.log("Encrypting with info: ", i);
             setInfo(i);
 
-    /*
-            const response = await fetch(`https://localhost:8088/matthewtest-${new Date().getTime()}`, {
-                method: 'PUT',
-                body: identityTransform.readable,
-                duplex: 'half',
-                headers: {
-                    'Content-Type': file.type,
-                },
-            });
-            console.log(response);
-    */
-
-            const queuingStrategy = new CountQueuingStrategy({ highWaterMark: 1 });
+            const decryptTransform = new DecryptTransform(i);
+            await decryptTransform.init();
 
             // incrementally reassemble the image into a blob via a data URL
             let imageBlob = new Blob();
+            const queuingStrategy = new CountQueuingStrategy({ highWaterMark: 1 });
             const writableStream = new WritableStream(
                 {
                     write(chunk) {
@@ -91,7 +80,10 @@ function App() {
                 queuingStrategy,
             );
 
-            await decryptStreamedAttachment(identityTransform.readable, writableStream, i);
+            fileStream
+                .pipeThrough(encryptTransform)
+                .pipeThrough(decryptTransform)
+                .pipeTo(writableStream);
         }
     }
 
