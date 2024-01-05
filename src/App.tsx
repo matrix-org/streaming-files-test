@@ -103,7 +103,7 @@ function App() {
             </form>
             <br/>
             <img id="outputImage"/>
-            <pre>{info ? `EncryptedFile = ${JSON.stringify(info, null, 4)}` : ''}</pre>
+            <pre>{info?.key ? `EncryptedFile = ${JSON.stringify(info, null, 4)}` : ''}</pre>
         </>
     )
 }
