@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { encryptStreamedAttachment, decryptStreamedAttachment } from 'matrix-encrypt-attachment'
+import { IEncryptedFile, encryptStreamedAttachment, decryptStreamedAttachment } from 'matrix-encrypt-attachment'
 
 import './App.css'
 
@@ -43,7 +43,7 @@ async function fileToReadableStream(file: File) {
 }
 
 function App() {
-    const [info, setInfo] = useState('');
+    const [info, setInfo] = useState({} as IEncryptedFile);
 
     const onFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files && event.target.files[0]) {
@@ -78,7 +78,8 @@ function App() {
                         console.log("WritableStream: Got chunk ", chunk);
                         imageBlob = new Blob([imageBlob, chunk]);
                         const imageUrl = URL.createObjectURL(imageBlob);
-                        document.getElementById('outputImage').src = imageUrl;
+                        const img = document.getElementById('outputImage') as HTMLImageElement;
+                        if (img) img.src = imageUrl;
                     },
                     close() {
                         console.log("WritableSteam: closed");
